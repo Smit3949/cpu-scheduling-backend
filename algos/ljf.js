@@ -1,8 +1,6 @@
 const router = require('express').Router();
 
 router.post('/', (req, res) => {
-
-    var state = req.body;
     var tuple = [],
     tuple_temp = [];
     var n = state.tableData.length;
@@ -19,74 +17,73 @@ router.post('/', (req, res) => {
         bt: parseInt(state.tableData[i][2]),
         art: parseInt(state.tableData[i][1]),
       });
+     
     }
+    var n = tuple.length;
+    var total_btt = [];
+    var artt = [];
+    for (var i = 0; i < n; i++) {
+      total_btt[i] = tuple[i].bt;
+      artt[i] = tuple[i].art;
+    }
+    var tuple_temp = tuple;
     tuple.sort(function (a, b) {
-      if (a.art == b.art) {
-        return a.bt - b.bt;
-      }
       return a.art - b.art;
     });
     tuple.sort();
     var n = tuple.length;
-    var wt = []; // waiting time
-    var tat = []; //turn around time
-    var total_wt = 0; //total waiting time
-    var total_tat = 0; //total turnaround time
-    var final_ans = []; // grannt chart
+    var wt = [];
+    var tat = [];
+    var total_wt = 0;
+    var total_tat = 0;
+    var final_ans = [];
     var visited = [];
     for (var i = 0; i < tuple.length; i++) {
       visited[i] = 0;
     }
-    var que = []; // running queue
-    var state = 0;
-    var flag = 0;
-    var count = 0;
+    var que = [];
+    var btco = [];
+    for (var i = 0; i < n; i++) {
+      btco[i] = 0;
+    }
     for (var i = 0; i < 10000; i++) {
-      visited[state]++;
-      if (tuple[state].art > i) {
+      for (var j = 0; j < n; j++) {
+        if (tuple[j].bt <= 0) {
+          visited[j] = 1;
+        }
+      }
+      var mn = 0;
+      var state = -1;
+      for (var j = 0; j < n; j++) {
+        if (tuple[j].art <= i && visited[j] === 0) {
+          if (tuple[j].bt > mn) {
+            mn = tuple[j].bt;
+            state = j;
+          }
+        }
+      }
+      if (state == -1) {
         final_ans.push("/");
         var smit = [];
         que.push(smit);
       } else {
-        if (flag == 1 && visited[state] > 1) {
-          final_ans.push("/");
-          var smit = [];
-          que.push(smit);
-        } else {
-          flag = 1;
-          for (var j = 0; j < tuple[state].bt; j++) {
-            final_ans.push(tuple[state].pid);
-          }
-          var mx = 10000;
-          var ind = 0;
-          for (var j = 0; j < tuple.length; j++) {
-            if (
-              tuple[j].art <= tuple[state].art + tuple[state].bt &&
-              visited[j] === 0
-            ) {
-              if (tuple[j].art < mx) {
-                mx = tuple[j].art;
-                ind = j;
-              }
-            }
-          }
-          for (var k = i; k < i + tuple[state].bt; k++) {
-            var smit = [];
-            count++;
-            for (var y = 0; y < n; y++) {
-              if (tuple[y].art <= k && visited[y] <= 1) {
-                smit.push(tuple[y].pid);
-              }
-            }
-            que.push(smit);
-          }
-          i += tuple[state].bt - 1;
-          visited[state]++;
-          state = ind;
+        for (var j = 0; j < tuple[state].bt; j++) {
+          final_ans.push(tuple[state].pid);
         }
+        for (var g = i; g < i + tuple[state].bt; g++) {
+          var smit = [];
+          for (var y = 0; y < n; y++) {
+            if (tuple[y].art <= g && visited[y] === 0) {
+              smit.push(tuple[y].pid);
+            }
+          }
+          que.push(smit);
+        }
+        i += tuple[state].bt - 1;
+        tuple[state].bt = 0;
       }
     }
-    var cmp_time = []; //completion time
+    var cmp_time = [];
     for (var i = 0; i < tuple.length; i++) {
       cmp_time[i] = -1;
     }
@@ -94,44 +91,43 @@ router.post('/', (req, res) => {
       if (final_ans[i] === "/") {
       } else {
         if (cmp_time[final_ans[i] - 1] == -1) {
-          console.log("hey " + i + " hry" + final_ans[i]);
           cmp_time[final_ans[i] - 1] = i + 1;
         }
       }
     }
     for (var i = 0; i < n; i++) {
-    
-      tat[i] = cmp_time[i] - tuple_temp[i].art;
-      wt[i] = tat[i] - tuple_temp[i].bt;
+      tat[i] = cmp_time[i] - artt[i];
+      wt[i] = tat[i] - total_btt[i];
     }
     for (var i = 0; i < n; i++) {
       total_wt = total_wt + wt[i];
       total_tat = total_tat + tat[i];
     }
+    // Changing Pid into string in final answer array
     for (var i = 0; i < final_ans.length; i++) {
       if (final_ans[i] != "/") {
         final_ans[i]--;
         final_ans[i] = "P" + final_ans[i].toString();
       }
     }
+    // Removing '/' from the back of the array
     for (var i = final_ans.length - 1; i >= 0; i--) {
       if (final_ans[i] != "/") break;
       final_ans.pop();
     }
     var data = {
-      readyQue: que,
-      tatarr: tat,
-      wtarr: wt,
-      comparr: cmp_time,
-      avgtat: total_tat/n,
-      avgwaiting: total_wt/n,
-      ganntChartArray: final_ans
+        readyQue: que,
+        tatarr: tat,
+        wtarr: wt,
+        comparr: cmp_time,
+        avgtat: total_tat/n,
+        avgwaiting: total_wt/n,
+        ganntChartArray: final_ans
     }
     res.send(data);
 
 });
-router.post('/io',(req, res)=>{
-    var state = req.body;
+router.post('/io', (req, res) => {
     var tuple = [];
     var n = state.tableData.length;
     for (let i = 0; i < n; i++) {
@@ -145,10 +141,10 @@ router.post('/io',(req, res)=>{
         bt2: parseInt(state.tableData[i][4]),
       });
     }
+    var total_bt = [];
+    var artt = [];
+    var total_btt = [];
     var n = tuple.length;
-    var total_bt = []; // total burst time
-    var artt = []; // temp. arrival time
-    var total_btt = []; // total burst time without io
     for (var i = 0; i < tuple.length; i++) {
       total_bt[i] = tuple[i].bt1 + tuple[i].io + tuple[i].bt2;
       total_btt[i] = total_bt[i] - tuple[i].io;
@@ -168,23 +164,23 @@ router.post('/io',(req, res)=>{
     for (var i = 0; i < tuple.length; i++) {
       visited[i] = 0;
     }
-    var que = []; // ready queue
+    var que = [];
     var btco = [];
     for (var i = 0; i < n; i++) {
       btco[i] = 0;
     }
-    for (var i = 0; i < 50; i++) {
+    for (var i = 0; i < 10000; i++) {
       for (var j = 0; j < n; j++) {
         if (total_bt[i] <= 0) {
           visited[i] = 1;
         }
       }
-      var mn = 9999;
+      var mn = 0;
       var state = -1;
       for (var j = 0; j < n; j++) {
         if (tuple[j].art <= i) {
-          if (tuple[j].art < mn) {
-            mn = tuple[j].art;
+          if (total_bt[j] > mn) {
+            mn = total_bt[j];
             state = j;
           }
         }
@@ -198,7 +194,7 @@ router.post('/io',(req, res)=>{
           for (var j = 0; j < tuple[state].bt1; j++) {
             final_ans.push(tuple[state].pid);
           }
-          tuple[state].art = i + tuple[state].bt1 + tuple[state].io; // change arrival time
+          tuple[state].art = i + tuple[state].bt1 + tuple[state].io;
           for (var g = i; g < i + tuple[state].bt1 - 1; g++) {
             var smit = [];
             for (var y = 0; y < n; y++) {
@@ -226,11 +222,11 @@ router.post('/io',(req, res)=>{
           }
           i += tuple[state].bt2 - 1;
           total_bt[state] = 0;
-          tuple[state].art = 100000;
+          tuple[state].art = 10000;
         }
       }
     }
-    var cmp_time = []; //COMPLETION TIME
+    var cmp_time = [];
     for (var i = 0; i < tuple.length; i++) {
       cmp_time[i] = -1;
     }
@@ -242,6 +238,9 @@ router.post('/io',(req, res)=>{
         }
       }
     }
+
+    var wt = [];
+
     for (var i = 0; i < n; i++) {
       tat[i] = cmp_time[i] - artt[i];
       wt[i] = tat[i] - total_btt[i];
@@ -250,6 +249,7 @@ router.post('/io',(req, res)=>{
       total_wt = total_wt + wt[i];
       total_tat = total_tat + tat[i];
     }
+    // Changing Pid into string in final answer array
     for (var i = 0; i < final_ans.length; i++) {
       if (final_ans[i] != "/") {
         final_ans[i]--;
@@ -270,5 +270,6 @@ router.post('/io',(req, res)=>{
         ganntChartArray: final_ans
     }
     res.send(data);
-})
+
+});
 module.exports = router;
