@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/vivek9patel/CPU-Scheduling-APP-React-Native">
-    <img src="assets/favicon_main.png" alt="Logo" width="100" height="100">
+    <img src="https://github.com/vivek9patel/CPU-Scheduling-APP-React-Native/assets/favicon_main.png" alt="Logo" width="100" height="100">
   </a>
 
   <h3 align="center">CPU Scheduling APP - Operating System</h3>
