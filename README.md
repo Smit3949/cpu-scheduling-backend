@@ -1,7 +1,5 @@
 <p align="center">
-  <a href="https://github.com/vivek9patel/CPU-Scheduling-APP-React-Native">
-    <img src="https://github.com/vivek9patel/CPU-Scheduling-APP-React-Native/assets/favicon_main.png" alt="Logo" width="100" height="100">
-  </a>
+  
 
   <h3 align="center">CPU Scheduling APP - Operating System</h3>
 
@@ -13,14 +11,6 @@
 </p>
 
 <!-- ABOUT THE PROJECT -->
-
-## About The Project
-
-<img src="assets/splash.png" width="200"/>
-<h4>
-
-</h4>
-
 ### Algorithms
 
 - FCFS Algorithm
